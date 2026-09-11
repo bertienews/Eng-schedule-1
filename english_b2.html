@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ENG-B2 · 40-week workload system</title>
+<style>
+:root{
+  --bg:#f5f3ee;--panel:#fffdf9;--ink:#1e2528;--muted:#657078;--line:#dcd8cf;
+  --accent:#355c7d;--accent2:#6c5b7b;--ok:#2f7d5c;--warn:#a56b16;--bad:#b33a3a;
+  --shadow:0 12px 40px rgba(35,38,40,.08);--radius:18px;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:inherit}.shell{max-width:1450px;margin:0 auto;padding:24px}.hero{display:grid;grid-template-columns:1.5fr .9fr;gap:18px;align-items:stretch;margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero-main{padding:30px;background:linear-gradient(135deg,#1f2d36,#355c7d 62%,#6c5b7b);color:white;border:0}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.78}.hero h1{margin:.25rem 0 .5rem;font-size:clamp(30px,5vw,54px);line-height:1.02}.hero p{max-width:760px;margin:0;opacity:.9}.hero-side{padding:24px;display:flex;flex-direction:column;justify-content:space-between}
+.statusline{font-size:13px;padding:9px 12px;border-radius:10px;background:#edf6f1;color:#225b43}.statusline.bad{background:#fff0f0;color:var(--bad)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.kpi{padding:18px}.kpi b{font-size:28px;display:block}.kpi span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+nav{position:sticky;top:0;z-index:20;background:rgba(245,243,238,.9);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:14px;padding:8px;display:flex;gap:6px;overflow:auto;margin:18px 0}.navbtn{white-space:nowrap;border:0;background:transparent;padding:9px 12px;border-radius:10px;cursor:pointer}.navbtn:hover{background:#ebe7df}
+section{margin:18px 0}.section-head{display:flex;justify-content:space-between;gap:16px;align-items:end;margin:0 0 10px}.section-head h2{margin:0;font-size:22px}.section-head p{margin:0;color:var(--muted);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.info{padding:20px}.info dl{display:grid;grid-template-columns:190px 1fr;gap:8px 14px;margin:0}.info dt{color:var(--muted)}.info dd{margin:0;font-weight:600}
+.callout{padding:16px 18px;border-left:4px solid var(--warn);background:#fff8e8;border-radius:12px}.callout strong{color:#7c520e}.callout ul{margin:8px 0 0;padding-left:18px}
+.table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow)}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:12px 13px;border-bottom:1px solid var(--line);vertical-align:top}th{position:sticky;top:0;background:#f0ede6;text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;z-index:1}tr:last-child td{border-bottom:0}tr.current-week{background:#eef5fb}.small{font-size:12px;color:var(--muted)}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e7edf2;color:#29485e;font-size:11px;font-weight:700}.pill.warn{background:#fff1cf;color:#855b09}.pill.user{background:#efe8f2;color:#5a4664}.pill.phase2{background:#e8f2ed;color:#2f6652}.pill.phase3{background:#f0eaf3;color:#624f6d}
+.check{display:inline-flex;gap:8px;align-items:flex-start}.check input{margin-top:3px;width:17px;height:17px;accent-color:var(--accent)}.check.done{opacity:.6;text-decoration:line-through}.blocks{display:grid;gap:5px}.blocks label{font-size:12px}.progress{height:10px;background:#e9e5dd;border-radius:999px;overflow:hidden}.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s}.phase-row{display:grid;grid-template-columns:200px 1fr 70px;gap:12px;align-items:center;margin:10px 0}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px}.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:9px 12px;font-weight:650;cursor:pointer}.btn:hover{background:#f0ede6}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.danger{color:var(--bad)}input[type="text"],input[type="number"],input[type="date"],input[type="url"],select,textarea{border:1px solid var(--line);background:white;border-radius:9px;padding:8px 10px;color:var(--ink);font:inherit}
+textarea{width:100%;min-height:110px;resize:vertical}.week-lab{padding:20px}.week-lab-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.editor-list{display:grid;gap:10px}.editor-item{display:grid;grid-template-columns:1fr 1fr 1.4fr auto;gap:8px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}.editor-item.material{grid-template-columns:1fr 1.3fr .8fr 1.2fr auto}.editor-item input,.editor-item select{width:100%}.week-select-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.week-summary{padding:14px;border-radius:12px;background:#f0ede6;margin:12px 0}.tiny{font-size:11px;color:var(--muted)}.cloud-ok{background:#edf6f1!important;color:#225b43!important}.cloud-warn{background:#fff8e8!important;color:#855b09!important}
+.calc{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}.calc-box{padding:20px}.mastery-table{width:100%;min-width:0;box-shadow:none;border:0}.mastery-table th{position:static}.score{width:90px}.weight{width:76px}.metric{font-size:36px;font-weight:800;line-height:1}.muted{color:var(--muted)}.search{min-width:260px}
+.legend{display:flex;flex-wrap:wrap;gap:8px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px}.dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}.dot.p2{background:var(--ok)}.dot.p3{background:var(--accent2)}
+footer{padding:28px 0 12px;color:var(--muted);font-size:12px;text-align:center}
+@media(max-width:900px){.hero,.grid2,.calc{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.shell{padding:14px}.info dl{grid-template-columns:1fr}.phase-row{grid-template-columns:1fr}.hero-main{padding:24px}}
+@media print{nav,.toolbar,.btn,.statusline{display:none!important}.shell{max-width:none;padding:0}.card,.table-wrap{box-shadow:none}.hero-main{color:#000;background:#fff;border:1px solid #ccc}.hero{grid-template-columns:1fr}.table-wrap{overflow:visible}table{min-width:0;font-size:10px}th{position:static}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="hero">
+    <div class="hero-main card">
+      <div class="eyebrow">Polina · English workload system</div>
+      <h1>ENG‑B2<br>40-week Exam Track</h1>
+      <p>Старт 12 сентября 2026 · 40 недель · 6–8 часов в неделю · Asia/Irkutsk (UTC+8). Это планировочный dashboard по загруженному PDF, а не официальный университетский syllabus.</p>
+    </div>
+    <div class="hero-side card">
+      <div>
+        <div class="eyebrow" style="color:var(--muted)">Хранение</div>
+        <h3 style="margin:.35rem 0 .6rem">Локально + Firebase</h3>
+        <div id="storageStatus" class="statusline">localStorage активен</div>
+        <div id="cloudStatus" class="statusline cloud-warn" style="margin-top:8px">Firebase: подключение…</div>
+      </div>
+      <div class="toolbar" style="margin-top:18px">
+        <button class="btn" id="exportState">Экспорт прогресса</button>
+        <label class="btn" for="importState">Импорт прогресса</label><input id="importState" type="file" accept="application/json" hidden>
+        <button class="btn" id="exportIcs">Экспорт .ics</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi card"><b id="weekNow">—</b><span>текущая неделя</span></div>
+    <div class="kpi card"><b id="weekProgress">0/40</b><span>недель закрыто</span></div>
+    <div class="kpi card"><b id="resourceProgress">0/40</b><span>ресурсов закрыто</span></div>
+    <div class="kpi card"><b id="blockProgress">0/160</b><span>study blocks закрыто</span></div>
+  </div>
+
+  <nav>
+    <button class="navbtn" data-go="overview">Обзор</button>
+    <button class="navbtn" data-go="deadlines">Даты</button>
+    <button class="navbtn" data-go="weeks">40 недель</button>
+    <button class="navbtn" data-go="resources">Ресурсы</button>
+    <button class="navbtn" data-go="weeklab">Моя неделя</button>
+    <button class="navbtn" data-go="study">Study blocks</button>
+    <button class="navbtn" data-go="mastery">Mastery</button>
+  </nav>
+
+  <section id="overview">
+    <div class="section-head"><div><h2>Программа и ритм</h2><p>40 недель от B1 к B2, адаптированные под твой рабочий график.</p></div><div class="legend"><span><i class="dot"></i>Фаза 1</span><span><i class="dot p2"></i>Фаза 2</span><span><i class="dot p3"></i>Фаза 3</span></div></div>
+    <div class="grid2">
+      <div class="info card">
+        <dl>
+          <dt>Название</dt><dd>English B1 → B2 · 40‑Week Exam Track</dd>
+          <dt>Код</dt><dd>ENG‑B2</dd>
+          <dt>Период</dt><dd>12.09.2026 – 18.06.2027</dd>
+          <dt>Формат</dt><dd>Самостоятельная 40-недельная программа</dd>
+          <dt>Цель</dt><dd>Закрыть пробелы B1 → выйти на уверенный B2 + Exam Track</dd>
+          <dt>Нагрузка</dt><dd>7 ч/нед в базовом режиме</dd>
+          <dt>Контрольные точки</dt><dd>W12 · Mid-term Checkpoint; W40 · Full Mock Exam</dd>
+        </dl>
+      </div>
+      <div class="info card">
+        <h3 style="margin-top:0">Фиксированные ограничения</h3>
+        <p><b>Работа:</b> понедельник–пятница, 08:00–17:00.<br><b>Дорога домой:</b> до ≈19:00.<br><b>Учебная нагрузка:</b> целевой коридор 6–8 ч/нед; расписание ниже = 7 ч/нед.</p>
+        <div class="callout"><strong>Базовый ритм:</strong> 2 часа в субботу, 2 часа в воскресенье и два вечерних блока по 1,5 часа во вторник/четверг после возвращения домой.</div>
+      </div>
+    </div>
+    <div class="card info" style="margin-top:14px">
+      <h3 style="margin-top:0">Прогресс по фазам</h3>
+      <div id="phaseProgress"></div>
+    </div>
+  </section>
+
+  <section id="deadlines">
+    <div class="section-head"><div><h2>Ключевые даты и milestones</h2><p>Контрольные точки программы и твои личные даты.</p></div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Готово</th><th>Дата</th><th>Тип</th><th>Событие</th><th>Вес</th><th>Основание</th></tr></thead>
+      <tbody id="deadlineBody"></tbody>
+    </table></div>
+  </section>
+
+  <section id="weeks">
+    <div class="section-head"><div><h2>Week-by-week · 40 недель</h2><p>Даты рассчитаны от W1 = 12 сентября 2026.</p></div><input class="search" id="weekSearch" type="text" placeholder="Поиск по теме, грамматике, ресурсу…"></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Готово</th><th>Неделя</th><th>Период</th><th>Тема</th><th>Грамматика</th><th>Exam focus</th><th>Ресурс</th><th>Источник</th><th>Study blocks</th></tr></thead>
+      <tbody id="weekBody"></tbody>
+    </table></div>
+  </section>
+
+  <section id="resources">
+    <div class="section-head"><div><h2>Reading / resource schedule</h2><p>Базовые источники из плана; конкретные ссылки и памятки можно добавлять в «Моя неделя».</p></div></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Готово</th><th>Неделя</th><th>Период</th><th>Тема</th><th>Ресурс из PDF</th><th>Когда закрыть</th></tr></thead>
+      <tbody id="resourceBody"></tbody>
+    </table></div>
+  </section>
+
+  <section id="weeklab">
+    <div class="section-head"><div><h2>Моя неделя · слова, материалы и памятки</h2><p>Выбери неделю и собери всё, что реально используешь: vocabulary, ссылки, заметки и свои памятки.</p></div></div>
+    <div class="card week-lab">
+      <div class="week-select-row">
+        <label><b>Неделя</b> <select id="labWeek"></select></label>
+        <span id="labDates" class="pill"></span>
+        <span id="labPhase" class="pill"></span>
+      </div>
+      <div id="labSummary" class="week-summary"></div>
+      <div class="week-lab-grid">
+        <div>
+          <div class="section-head" style="margin-top:4px"><div><h3 style="margin:0">Слова недели</h3><p>Слово → значение/перевод → пример.</p></div><button class="btn" id="addWord" type="button">+ слово</button></div>
+          <div id="wordList" class="editor-list"></div>
+        </div>
+        <div>
+          <div class="section-head" style="margin-top:4px"><div><h3 style="margin:0">Материалы</h3><p>Видео, статья, упражнение, памятка или твоя ссылка.</p></div><button class="btn" id="addMaterial" type="button">+ материал</button></div>
+          <div id="materialList" class="editor-list"></div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <label for="weekMemo"><b>Памятка / конспект недели</b></label>
+        <textarea id="weekMemo" placeholder="Например: when I wish + Past Perfect; мои типичные ошибки; что пересмотреть перед повторением…"></textarea>
+        <div class="tiny">Сохраняется локально и синхронизируется в Firebase по отдельному ключу.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="study">
+    <div class="section-head"><div><h2>Study block schedule</h2><p>7 часов/нед, без пересечения с работой и дорогой.</p></div></div>
+    <div class="grid2">
+      <div class="info card">
+        <h3 style="margin-top:0">Повторяется каждую неделю</h3>
+        <table style="min-width:0" class="mastery-table"><tbody>
+          <tr><td><b>Сб 11:00–13:00</b></td><td>Тема недели + глубокий грамматический блок</td></tr>
+          <tr><td><b>Вс 15:00–17:00</b></td><td>Reading / Use of English + заметки</td></tr>
+          <tr><td><b>Вт 19:30–21:00</b></td><td>Listening + shadowing / pronunciation</td></tr>
+          <tr><td><b>Чт 19:30–21:00</b></td><td>Writing / speaking + недельное закрепление</td></tr>
+        </tbody></table>
+      </div>
+      <div class="info card">
+        <h3 style="margin-top:0">Логика нагрузки</h3>
+        <p>Будние блоки начинаются не раньше 19:30, то есть после дороги домой. Самые тяжёлые задачи вынесены на выходные; будни используются для более узких навыков.</p>
+        <p class="small">Если неделя перегружена, минимальная версия = Сб + Вс + один будний блок = 5,5 ч. Целевая = все четыре блока = 7 ч.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="mastery">
+    <div class="section-head"><div><h2>Progress + weighted mastery</h2><p>Комбинация A + C: completion считается автоматически, skill weights — пользовательская модель, не официальная оценка.</p></div></div>
+    <div class="calc">
+      <div class="calc-box card">
+        <h3 style="margin-top:0">Custom weighted mastery</h3>
+        <table class="mastery-table">
+          <thead><tr><th>Навык</th><th>Вес %</th><th>Текущий score 0–100</th></tr></thead>
+          <tbody id="masteryBody"></tbody>
+        </table>
+        <div id="weightWarning" class="small" style="margin-top:8px"></div>
+      </div>
+      <div class="calc-box card">
+        <div class="eyebrow" style="color:var(--muted)">Текущий running mastery</div>
+        <div class="metric" id="runningMastery">—</div>
+        <p class="muted">Считается только по навыкам, для которых уже введён score.</p>
+        <label>Цель <input id="targetScore" type="number" min="0" max="100" step="1" value="80" class="score"> %</label>
+        <p><b>Нужно в среднем на оставшихся навыках:</b><br><span id="neededScore">—</span></p>
+        <hr style="border:0;border-top:1px solid var(--line)">
+        <div class="eyebrow" style="color:var(--muted)">Completion</div>
+        <p><b id="completionPct">0%</b> недель закрыто · это отдельная метрика, она не выдаётся за официальный grade.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>ENG‑B2 workload system · standalone HTML · localStorage + Firebase RTDB sync</footer>
+</div>
+
+<script>
+const START_UTC = Date.UTC(2026,8,12); // 12 Sep 2026, date arithmetic only
+const NS = 'polina_eng_b2_v1';
+const TZ = 'Asia/Irkutsk';
+const firebaseConfig = {
+  apiKey: "AIzaSyCyvU8aSd75k1b_gzSRd4xsAUN0g5NKgcQ",
+  authDomain: "semester-dashboard-19508.firebaseapp.com",
+  projectId: "semester-dashboard-19508",
+  storageBucket: "semester-dashboard-19508.firebasestorage.app",
+  messagingSenderId: "368253462740",
+  appId: "1:368253462740:web:65e025de25552b0add3341",
+  measurementId: "G-V58WK1BE0S"
+};
+const DB_ROOT = 'engB2DashboardV2/state';
+const DB_CANDIDATES = [
+  `https://${firebaseConfig.projectId}-default-rtdb.firebaseio.com`,
+  `https://${firebaseConfig.projectId}-default-rtdb.europe-west1.firebasedatabase.app`,
+  `https://${firebaseConfig.projectId}-default-rtdb.asia-southeast1.firebasedatabase.app`
+];
+const weeks = [
+{w:1,p:1,m:1,topic:'Цифровой след и дофаминовая петля (Digital footprint, screen time, doomscrolling)',grammar:'Present Simple vs Present Continuous; Dynamic vs Stative Verbs; always/constantly + V-ing для раздражения',focus:'Listening: фонетические слияния (kind of → kinda); shadowing шортсов',resource:"Rachel's English; TikTok (@trackstarshow)",page:1},
+{w:2,p:1,m:1,topic:'Ловушка продуктивности и выгорание (Burnout culture, hustle vs slow living)',grammar:'Present Perfect vs Present Perfect Continuous; результат vs длительность; for/since/recently',focus:'Writing: развернутый абзац «Причина–Следствие» (Problem-Solution)',resource:'Статьи The Guardian / Vox',page:1},
+{w:3,p:1,m:1,topic:'Минимализм и экология потребления (Fast fashion, zero waste, decluttering)',grammar:'used to / would / be-get used to; временные маркеры настоящего и прошлого',focus:'Reading: skimming — понимание общей сути длинных статей',resource:'Substack лонгриды; Pinterest мудборды',page:1},
+{w:4,p:1,m:1,topic:'Пандемия одиночества в больших городах (Social isolation, third places)',grammar:'must, have to, need to, needn\'t, should, ought to',focus:'Exam Practice: Cambridge Use of English Part 4 (Key Word Transformation)',resource:'Тесты Cambridge B1/B2',page:2},
+{w:5,p:1,m:2,topic:'Психология преступлений и триллеры (True crime, мотивы, алиби)',grammar:'Past Simple vs Past Continuous; Past Perfect Simple',focus:"Listening: детекция he'd done / they'd left в аудио",resource:'Подкаст Overdue (с транскриптом на 0.85x)',page:2},
+{w:6,p:1,m:2,topic:'Исторические мистификации и скандалы (Dark Academia, засекреченные архивы)',grammar:'Past Perfect Continuous; by the time; hardly…when; scarcely',focus:'Writing: связная история / Narrative essay, 140–160 слов',resource:'Аналитические видео YouTube (Jack Edwards)',page:2},
+{w:7,p:1,m:2,topic:'Эскапизм, книги и ментальный побег (Fiction vs Reality, BookTok)',grammar:'I wish / If only + Past Simple; I wish / If only + Past Perfect',focus:'Use of English: перефразирование с I wish / If only',resource:'Книжные обзоры Goodreads / YouTube',page:3},
+{w:8,p:1,m:2,topic:'Этические дилеммы и роковые выборы (Moral dilemmas, trolley problem)',grammar:"It's high/about time + Past Subjunctive; would rather / would sooner",focus:'Speaking: монолог о моральном выборе, 2 минуты',resource:'Language Reactor (Netflix)',page:3},
+{w:9,p:1,m:3,topic:'Язык тела и распознавание лжи (Profiling, micro-expressions)',grammar:"Modals of Deduction (Present): must, can't, may, might, could; must be doing",focus:'Listening: разбор интервью с экспертами по поведению',resource:'TED-Ed / WIRED на YouTube',page:3},
+{w:10,p:1,m:3,topic:'Культура отмены и травля в сети (Cancel culture, accountability vs harassment)',grammar:"Modals of Deduction (Past): must/can't/might/could have + V3",focus:'Writing: аналитическое эссе — причины и последствия скандала',resource:'New York Times Opinion videos',page:3},
+{w:11,p:1,m:3,topic:'Упущенная выгода и синдром FOMO (Regrets, decision paralysis)',grammar:"should have / shouldn't have + V3; needn't have done vs didn't need to do",focus:'Pronunciation: shouldna, couldna, wouldna',resource:"mmmEnglish / Accent's Way",page:4},
+{w:12,p:1,m:3,topic:'Промежуточный экзаменационный срез (Mid-term Checkpoint)',grammar:'Комплексное повторение: Past + Modals + зависимые предлоги',focus:'Full Test: B1+ / входной срез B2 (Reading & Use of English)',resource:'Официальные материалы FCE (B2 First)',page:4},
+{w:13,p:2,m:4,topic:'Климатический кризис и эко-тревожность (Climate anxiety, eco-activism)',grammar:'Zero & First Conditionals; unless, provided that, as long as, in case',focus:'Writing: вводный абзац и thesis для Opinion Essay (B2)',resource:'BBC 6 Minute English / Climate Podcasts',page:4},
+{w:14,p:2,m:4,topic:'Антиутопии и будущее технологий (Black Mirror tech, transhumanism)',grammar:'Second Conditional; Third Conditional',focus:'Reading for Inference — скрытый подтекст',resource:'Научно-популярные статьи Wired / Aeon',page:5},
+{w:15,p:2,m:4,topic:'Альтернативная история и эффект бабочки (Multiverse, pivotal historical events)',grammar:'Mixed Conditionals (2+3 и 3+2)',focus:'Use of English: трансформация сложных conditional sentences',resource:'Видеоэссе Kurzgesagt',page:5},
+{w:16,p:2,m:4,topic:'Кризисный менеджмент и переговоры (Diplomacy, conflict resolution)',grammar:'Formal conditionals with inversion: Were you to… / Had we known… / Should you require…',focus:'Speaking: аргументация «за/против» + discourse markers',resource:'Записи дебатов Оксфордского союза',page:5},
+{w:17,p:2,m:5,topic:'Индустрия сверхпотребления (Consumer culture, marketing traps)',grammar:'Passive Voice во всех временах; passive with modals',focus:'Listening: пассивные конструкции в радиорепортажах',resource:'NPR News / BBC World Service',page:5},
+{w:18,p:2,m:5,topic:'Искусственный интеллект и авторское право (Generative AI, copyright infringement)',grammar:'Impersonal / Reporting Passive: It is said… / is considered to be… / is expected to…',focus:'Writing: Formal Report / Formal Essay',resource:'TechCrunch; The Verge',page:6},
+{w:19,p:2,m:5,topic:'Биохакинг и модификация тела (Genetic engineering, longevity)',grammar:'Causative have/get something done; make/let/force/allow',focus:'Use of English: Open Cloze',resource:'Huberman Lab (фрагменты с видео)',page:6},
+{w:20,p:2,m:5,topic:'Капитализм слежки и приватность данных (Surveillance, facial recognition)',grammar:'Passive infinitive/gerund: being watched, to be forgotten, having been betrayed',focus:'Reading: Multiple Matching',resource:'DW Documentary — документальные расследования',page:6},
+{w:21,p:2,m:6,topic:'Дипфейки, дезинформация и постправда (Post-truth era, algorithms, bias)',grammar:'Reported Speech: сдвиг времён, modal verbs, time/place markers',focus:'Listening: direct speech vs пересказ журналиста',resource:'Подкаст The Daily (The New York Times)',page:7},
+{w:22,p:2,m:6,topic:'Информаторы и громкие судебные процессы (Whistleblowers, investigative journalism)',grammar:'Indirect questions; Embedded questions',focus:'Speaking: вежливое выяснение фактов / интервьюирование',resource:'Succession; The Morning Show',page:7},
+{w:23,p:2,m:6,topic:'Публичные извинения и кризисный PR (PR statements, greenwashing)',grammar:'Reporting verbs: admit to, accuse of, deny having done, urge to, apologise for',focus:'Writing: критическая рецензия (Review)',resource:'Разборы пресс-конференций на YouTube',page:7},
+{w:24,p:2,m:6,topic:'Свобода слова против цензуры (Banned books, hate speech laws)',grammar:'Formal B2 Subjunctive: insist that he be present; demand that she resign',focus:'Exam Practice: Use of English Part 4 с reporting verbs',resource:'Академические эссе и статьи The Atlantic',page:7},
+{w:25,p:2,m:7,topic:'Нейропластичность и формирование привычек (Dopamine, cognitive bias)',grammar:'Gerunds vs Infinitives со сменой значения: remember, forget, stop, regret, try, mean, go on',focus:'Writing: Article format для студенческого журнала',resource:'Atomic Habits (Дж. Клир): книга / лекции',page:8},
+{w:26,p:2,m:7,topic:'Субкультуры и эстетика в поп-культуре (Dark Academia, Cottagecore, Y2K)',grammar:'Relative Clauses: defining/non-defining; punctuation; who/which/that',focus:'Reading: Gapped Text',resource:'Эссе Dakota Warren / The Art Assignment',page:8},
+{w:27,p:2,m:7,topic:'Тропы в кино: антигерои и серые персонажи (Morally grey characters, villain origins)',grammar:'Prepositions in relative clauses; which for a whole clause',focus:'Speaking: comparative analysis of two visuals/concepts',resource:'Видеоэссе Like Stories of Old',page:8},
+{w:28,p:2,m:7,topic:'Городские легенды и теория заговоров (Urban legends, modern folklore)',grammar:'Reduced Relative Clauses через participles',focus:'Exam Practice: Use of English Part 3 — Word Formation',resource:'Подкасты Lore / Stuff You Should Know',page:9},
+{w:29,p:3,m:8,topic:'Социальное неравенство и элитизм (Meritocracy, classism, nepotism)',grammar:'Inversion I: Never, Seldom, Rarely, Little did…, Under no circumstances',focus:'Writing: B2 essay ~190 слов с контраргументацией',resource:'The School of Life / Philosophy Tube',page:9},
+{w:30,p:3,m:8,topic:'Глобализация против локальной идентичности (Cultural homogenisation)',grammar:'Inversion II: Hardly…when; No sooner…than; Only after; Not until',focus:'Listening: B2 Part 3 — matching 5 speakers',resource:'BBC Radio 4 “Any Questions?”',page:9},
+{w:31,p:3,m:8,topic:'Философия власти и манипуляция массами (Totalitarian systems, propaganda)',grammar:'Cleft Sentences: What we need is… / It was…that… / The reason why…',focus:'Speaking: Parts 3 & 4 — discussion and consensus',resource:'Отрывки Оруэлла / Хаксли на английском',page:10},
+{w:32,p:3,m:8,topic:'Урбанистика будущего: умные города (Smart cities, surveillance vs green space)',grammar:'Participle Clauses: cause/time/condition',focus:'Reading: сложные публицистические тексты, Multiple Choice',resource:'Monocle / архитектурные блоги',page:10},
+{w:33,p:3,m:9,topic:'Будущее образования: дипломы против навыков (EdTech, alternative credentials)',grammar:'Future Continuous / Perfect / Perfect Continuous; be about to / bound to / on the verge of',focus:'Writing: Formal letter / Proposal',resource:'Edutopia; Harvard Gazette',page:10},
+{w:34,p:3,m:9,topic:'Искусство, провокация и цензура (Public art, vandalism vs expression)',grammar:'Advanced comparisons: the more…the more; nowhere near as; all the more; by far the most',focus:'Listening: юмор, ирония и подтекст в рецензиях',resource:'BBC The Cultural Frontline',page:11},
+{w:35,p:3,m:9,topic:'Миграция и поиск дома (Third-culture kids, diaspora, belonging)',grammar:'High-register linkers: Nevertheless, Whereas, In spite of, Albeit, Therefore, In order that',focus:'Use of English: total drill Parts 1–4',resource:'The New Yorker',page:11},
+{w:36,p:3,m:9,topic:'Биоэтика и клонирование (Genetic editing, playing God)',grammar:'Quantifiers/determiners: neither, either, each, every, none of which, a great deal of',focus:'Reading: длинные научные статьи + guessing from context',resource:'Nature; New Scientist',page:11},
+{w:37,p:3,m:10,topic:'Глобальная экономика и рынок труда (Gig economy, 4-day work week)',grammar:'Three-part phrasal verbs + dependent prepositions',focus:'Exam Marathon: timed Use of English Parts 1–4',resource:'Банк реальных экзаменационных заданий',page:12},
+{w:38,p:3,m:10,topic:'Человечность в эпоху автоматизации (Human connection, empathy in tech)',grammar:'Сводная систематизация времён и punctuation in complex sentences',focus:'Writing: full essay on timer — 40 min, 190 words',resource:'Таймер; симуляция условий экзамена',page:12},
+{w:39,p:3,m:10,topic:'Колонизация космоса против спасения Земли (Space exploration vs Earth crisis)',grammar:'Финальный разбор grammar traps B2: articles, geography, collective nouns',focus:'Speaking: full oral exam simulation',resource:'Запись себя на видео / диктофон',page:12},
+{w:40,p:3,m:10,topic:'Итоговая аттестация (Full Mock Exam)',grammar:'Комплексный диагностический тест по всем 40 неделям',focus:'Full B2 Exam: Reading & Use of English, Writing, Listening, Speaking',resource:'Сертификационный тест B2',page:12}
+];
+const mastery = [
+  {id:'grammar',label:'Grammar / Use of English',weight:25},
+  {id:'listening',label:'Listening',weight:25},
+  {id:'reading',label:'Reading',weight:20},
+  {id:'writing',label:'Writing',weight:15},
+  {id:'speaking',label:'Speaking',weight:15}
+];
+const studyDefs = [
+  {id:'sat',dayOffset:0,label:'Сб 11:00–13:00',start:'110000',end:'130000',task:'Тема + grammar deep work'},
+  {id:'sun',dayOffset:1,label:'Вс 15:00–17:00',start:'150000',end:'170000',task:'Reading / Use of English'},
+  {id:'tue',dayOffset:3,label:'Вт 19:30–21:00',start:'193000',end:'210000',task:'Listening + shadowing'},
+  {id:'thu',dayOffset:5,label:'Чт 19:30–21:00',start:'193000',end:'210000',task:'Writing / speaking + review'}
+];
+let state = {};
+let stateMeta = {};
+let dbBase = localStorage.getItem(NS+'.dbBase') || '';
+let syncTimer = null;
+const remoteTimers = new Map();
+try{ state = JSON.parse(localStorage.getItem(NS)||'{}') || {}; }catch(e){ state={}; }
+try{ stateMeta = JSON.parse(localStorage.getItem(NS+'.meta')||'{}') || {}; }catch(e){ stateMeta={}; }
+function setStatus(msg,bad=false){const el=document.getElementById('storageStatus');el.textContent=msg;el.className='statusline'+(bad?' bad':'');}
+function setCloudStatus(msg,kind='warn'){const el=document.getElementById('cloudStatus');el.textContent=msg;el.className='statusline '+(kind==='bad'?'bad':kind==='ok'?'cloud-ok':'cloud-warn');}
+function persistLocal(){ localStorage.setItem(NS,JSON.stringify(state)); localStorage.setItem(NS+'.meta',JSON.stringify(stateMeta)); }
+function keyToPath(k){return btoa(unescape(encodeURIComponent(String(k)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function pathToKey(s){let x=String(s).replace(/-/g,'+').replace(/_/g,'/');while(x.length%4)x+='=';return decodeURIComponent(escape(atob(x)));}
+function saveKey(key,val,remoteDelay=0){
+  key=String(key); state[key]=val; stateMeta[key]=Date.now();
+  try{ persistLocal(); setStatus('localStorage активен · сохранено'); }catch(e){ setStatus('Не удалось сохранить локально: '+e.message,true); }
+  queueRemoteWrite(key,val,stateMeta[key],remoteDelay);
+}
+function getKey(key,fallback){ return Object.prototype.hasOwnProperty.call(state,String(key)) ? state[String(key)] : fallback; }
+function queueRemoteWrite(key,val,ts,delay=0){
+  if(!dbBase)return; const id=String(key);
+  if(remoteTimers.has(id))clearTimeout(remoteTimers.get(id));
+  remoteTimers.set(id,setTimeout(()=>{remoteTimers.delete(id);writeRemoteKey(id,val,ts);},delay));
+}
+async function writeRemoteKey(key,val,ts){
+  if(!dbBase)return;
+  try{
+    const r=await fetch(`${dbBase}/${DB_ROOT}/${keyToPath(key)}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:val,updatedAt:Number(ts)||Date.now()})});
+    if(!r.ok){const t=await r.text();throw new Error(`write ${r.status}: ${t.slice(0,120)}`);}
+    setCloudStatus('Firebase: синхронизация активна','ok');
+  }catch(e){setCloudStatus('Firebase: ошибка записи · '+e.message,'bad');}
+}
+async function resolveDatabase(){
+  const candidates=dbBase?[dbBase,...DB_CANDIDATES.filter(x=>x!==dbBase)]:DB_CANDIDATES;
+  for(const u of candidates){
+    try{
+      const r=await fetch(`${u}/.json?shallow=true`,{cache:'no-store'});
+      if(r.status!==404){dbBase=u;localStorage.setItem(NS+'.dbBase',u);return u;}
+    }catch(e){}
+  }
+  throw new Error('адрес Realtime Database не определён');
+}
+async function pullRemote(){
+  if(!dbBase)return;
+  try{
+    const r=await fetch(`${dbBase}/${DB_ROOT}.json`,{cache:'no-store'});
+    if(!r.ok){const t=await r.text();throw new Error(`read ${r.status}: ${t.slice(0,120)}`);}
+    const remote=await r.json(); let changed=false;
+    if(remote&&typeof remote==='object'){
+      Object.entries(remote).forEach(([encoded,packet])=>{
+        if(!packet||typeof packet!=='object'||!Object.prototype.hasOwnProperty.call(packet,'value'))return;
+        let key;try{key=pathToKey(encoded);}catch(e){return;}
+        const rt=Number(packet.updatedAt)||0, lt=Number(stateMeta[key])||0;
+        if(rt>=lt){state[key]=packet.value;stateMeta[key]=rt;changed=true;}
+      });
+    }
+    if(changed){persistLocal();render();renderWeekLab();}
+    setCloudStatus('Firebase: синхронизация активна','ok');
+  }catch(e){setCloudStatus('Firebase: '+e.message,'bad');}
+}
+async function initFirebaseSync(){
+  setCloudStatus('Firebase: подключение…','warn');
+  try{await resolveDatabase();await pullRemote();syncTimer=setInterval(pullRemote,15000);}
+  catch(e){setCloudStatus('Firebase: '+e.message,'bad');}
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function dateUTC(offsetDays){ return new Date(START_UTC + offsetDays*86400000); }
+function fmt(d){ return new Intl.DateTimeFormat('ru-RU',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}).format(d).replace(' г.',''); }
+function ymd(d){return d.toISOString().slice(0,10).replace(/-/g,'');}
+function rangeFor(w){const s=dateUTC((w-1)*7),e=dateUTC((w-1)*7+6);return `${fmt(s)} — ${fmt(e)}`;}
+function dueFor(w){return dateUTC((w-1)*7+6);}
+function checkbox(key,label=''){ const checked=!!getKey(key,false); return `<label class="check ${checked?'done':''}"><input type="checkbox" data-key="${esc(key)}" ${checked?'checked':''}>${label?`<span>${esc(label)}</span>`:''}</label>`; }
+function phaseLabel(p){return p===1?'Фаза 1':p===2?'Фаза 2':'Фаза 3'}
+function phaseClass(p){return p===2?'phase2':p===3?'phase3':''}
+function currentWeek(){ const now=new Date(); const today=Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()); const diff=Math.floor((today-START_UTC)/86400000); if(diff<0)return 0; if(diff>=280)return 41; return Math.floor(diff/7)+1; }
+function render(){
+  const cw=currentWeek(); document.getElementById('weekNow').textContent = cw===0?'ещё не стартовал':cw===41?'завершён':`W${cw}`;
+  const body=document.getElementById('weekBody'); body.innerHTML=weeks.map(x=>{
+    const blocks=studyDefs.map(b=>checkbox(`study.${x.w}.${b.id}`,b.label)).join('');
+    return `<tr data-search="${esc((x.topic+' '+x.grammar+' '+x.focus+' '+x.resource).toLowerCase())}" class="${cw===x.w?'current-week':''}">
+      <td>${checkbox(`week.${x.w}`)}</td><td><b>W${x.w}</b><br><span class="pill ${phaseClass(x.p)}">${phaseLabel(x.p)}</span></td><td>${rangeFor(x.w)}</td>
+      <td><b>${esc(x.topic)}</b></td><td>${esc(x.grammar)}</td><td>${esc(x.focus)}</td><td>${esc(x.resource)}</td><td class="small">PDF p.${x.page}</td><td><div class="blocks">${blocks}</div></td></tr>`;
+  }).join('');
+  document.getElementById('resourceBody').innerHTML=weeks.map(x=>`<tr><td>${checkbox(`resource.${x.w}`)}</td><td>W${x.w}</td><td>${rangeFor(x.w)}</td><td>${esc(x.topic)}</td><td><b>${esc(x.resource)}</b></td><td>До чт, 21:00 <span class="small">(планировочная цель)</span></td></tr>`).join('');
+  const deadlines=[
+    {key:'deadline.transcript',date:new Date(Date.UTC(2026,10,12)),type:'Личный milestone',name:'Official transcript showing all completed and in-progress coursework',weight:'—',basis:'Добавлено тобой · не из PDF',cls:'user'},
+    {key:'deadline.w12',date:dueFor(12),type:'Checkpoint',name:'ENG-B2 · W12 Mid-term Checkpoint',weight:'—',basis:'Плановая дата: конец W12',cls:''},
+    {key:'deadline.w40',date:dueFor(40),type:'Full Mock',name:'ENG-B2 · W40 Full Mock Exam',weight:'—',basis:'Плановая дата: конец W40',cls:''}
+  ].sort((a,b)=>a.date-b.date);
+  document.getElementById('deadlineBody').innerHTML=deadlines.map(d=>`<tr><td>${checkbox(d.key)}</td><td><b>${fmt(d.date)}</b></td><td><span class="pill ${d.cls}">${d.type}</span></td><td>${esc(d.name)}</td><td>${d.weight}</td><td class="small">${d.basis}</td></tr>`).join('');
+  document.getElementById('masteryBody').innerHTML=mastery.map(m=>`<tr><td><b>${m.label}</b></td><td><input class="weight" type="number" min="0" max="100" step="1" data-input-key="mastery.weight.${m.id}" value="${getKey(`mastery.weight.${m.id}`,m.weight)}"></td><td><input class="score" type="number" min="0" max="100" step="1" placeholder="—" data-input-key="mastery.score.${m.id}" value="${getKey(`mastery.score.${m.id}`,'')}"></td></tr>`).join('');
+  document.getElementById('targetScore').value=getKey('mastery.target',80);
+  bind(); updateStats(); updateMastery();
+}
+function bind(){
+  document.querySelectorAll('input[type=checkbox][data-key]').forEach(el=>el.addEventListener('change',e=>{saveKey(e.target.dataset.key,e.target.checked);const lab=e.target.closest('.check');if(lab)lab.classList.toggle('done',e.target.checked);updateStats();}));
+  document.querySelectorAll('[data-input-key]').forEach(el=>el.addEventListener('input',e=>{saveKey(e.target.dataset.inputKey,e.target.value,500);updateMastery();}));
+}
+function updateStats(){
+  const wc=weeks.filter(x=>getKey(`week.${x.w}`,false)).length;
+  const rc=weeks.filter(x=>getKey(`resource.${x.w}`,false)).length;
+  let bc=0;weeks.forEach(x=>studyDefs.forEach(b=>{if(getKey(`study.${x.w}.${b.id}`,false))bc++;}));
+  document.getElementById('weekProgress').textContent=`${wc}/40`;document.getElementById('resourceProgress').textContent=`${rc}/40`;document.getElementById('blockProgress').textContent=`${bc}/160`;document.getElementById('completionPct').textContent=`${Math.round(wc/40*100)}%`;
+  const phases=[{p:1,label:'Фаза 1 · W1–W12',start:1,end:12},{p:2,label:'Фаза 2 · W13–W28',start:13,end:28},{p:3,label:'Фаза 3 · W29–W40',start:29,end:40}];
+  document.getElementById('phaseProgress').innerHTML=phases.map(ph=>{const total=ph.end-ph.start+1,done=weeks.filter(x=>x.w>=ph.start&&x.w<=ph.end&&getKey(`week.${x.w}`,false)).length,p=Math.round(done/total*100);return `<div class="phase-row"><b>${ph.label}</b><div class="progress"><i style="width:${p}%"></i></div><span>${done}/${total}</span></div>`}).join('');
+}
+function updateMastery(){
+  const rows=mastery.map(m=>({w:Number(getKey(`mastery.weight.${m.id}`,m.weight)),s:getKey(`mastery.score.${m.id}`,'')}));
+  const totalW=rows.reduce((a,r)=>a+(isFinite(r.w)?r.w:0),0);document.getElementById('weightWarning').textContent=totalW===100?'Веса = 100%.':'⚠️ Сейчас сумма весов = '+totalW+'%. Для чистой интерпретации верни её к 100%.';
+  let earned=0,enteredW=0;rows.forEach(r=>{if(r.s!==''&&isFinite(Number(r.s))){earned+=Number(r.s)*r.w;enteredW+=r.w;}});
+  document.getElementById('runningMastery').textContent=enteredW?`${(earned/enteredW).toFixed(1)}%`:'—';
+  const target=Number(document.getElementById('targetScore').value||80); const remW=totalW-enteredW; const need=remW>0?(target*totalW-earned)/remW:null;
+  document.getElementById('neededScore').textContent = remW<=0 ? 'Все навыки уже заполнены.' : need<=0?'Цель уже обеспечена введёнными результатами.':need>100?`${need.toFixed(1)}% — текущая цель недостижима без изменения уже введённых scores/весов.`:`${need.toFixed(1)}%`;
+}
+function labSelectedWeek(){return Number(document.getElementById('labWeek').value||1);}
+function idsFor(prefix){
+  const out=new Set(); Object.keys(state).forEach(k=>{if(k.startsWith(prefix)){const rest=k.slice(prefix.length);const id=rest.split('.')[0];if(id)out.add(id);}}); return [...out].sort();
+}
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function addWord(){const w=labSelectedWeek(),id=newId();saveKey(`lab.${w}.words.${id}.term`,'');saveKey(`lab.${w}.words.${id}.meaning`,'');saveKey(`lab.${w}.words.${id}.example`,'');renderWeekLab();}
+function addMaterial(){const w=labSelectedWeek(),id=newId();saveKey(`lab.${w}.materials.${id}.title`,'');saveKey(`lab.${w}.materials.${id}.url`,'');saveKey(`lab.${w}.materials.${id}.type`,'Памятка');saveKey(`lab.${w}.materials.${id}.note`,'');renderWeekLab();}
+function renderWeekLab(){
+  const sel=document.getElementById('labWeek'); if(!sel)return;
+  if(!sel.options.length){sel.innerHTML=weeks.map(x=>`<option value="${x.w}">W${x.w} · ${esc(x.topic.split('(')[0].trim())}</option>`).join(''); const cw=currentWeek();sel.value=(cw>=1&&cw<=40)?cw:1;}
+  const w=labSelectedWeek(),x=weeks.find(v=>v.w===w)||weeks[0];
+  document.getElementById('labDates').textContent=rangeFor(w);document.getElementById('labPhase').textContent=phaseLabel(x.p);
+  document.getElementById('labPhase').className='pill '+phaseClass(x.p);
+  document.getElementById('labSummary').innerHTML=`<b>${esc(x.topic)}</b><br><span class="small"><b>Grammar:</b> ${esc(x.grammar)} · <b>Focus:</b> ${esc(x.focus)} · <b>Base resource:</b> ${esc(x.resource)}</span>`;
+  const wp=`lab.${w}.words.`; const words=idsFor(wp).filter(id=>!getKey(`${wp}${id}.deleted`,false));
+  document.getElementById('wordList').innerHTML=words.length?words.map(id=>`<div class="editor-item" data-word-id="${id}">
+    <input type="text" placeholder="word / phrase" data-lab-key="${wp}${id}.term" value="${esc(getKey(`${wp}${id}.term`,''))}">
+    <input type="text" placeholder="значение / перевод" data-lab-key="${wp}${id}.meaning" value="${esc(getKey(`${wp}${id}.meaning`,''))}">
+    <input type="text" placeholder="пример в контексте" data-lab-key="${wp}${id}.example" value="${esc(getKey(`${wp}${id}.example`,''))}">
+    <button class="btn danger" type="button" data-delete-word="${id}">×</button></div>`).join(''):`<div class="small">Пока пусто. Добавь слова, которые реально встретятся на этой неделе.</div>`;
+  const mp=`lab.${w}.materials.`; const mats=idsFor(mp).filter(id=>!getKey(`${mp}${id}.deleted`,false));
+  document.getElementById('materialList').innerHTML=mats.length?mats.map(id=>`<div class="editor-item material" data-mat-id="${id}">
+    <input type="text" placeholder="Название" data-lab-key="${mp}${id}.title" value="${esc(getKey(`${mp}${id}.title`,''))}">
+    <input type="url" placeholder="https://…" data-lab-key="${mp}${id}.url" value="${esc(getKey(`${mp}${id}.url`,''))}">
+    <select data-lab-key="${mp}${id}.type">${['Памятка','Статья','Видео','Подкаст','Упражнение','Другое'].map(t=>`<option ${getKey(`${mp}${id}.type`,'Памятка')===t?'selected':''}>${t}</option>`).join('')}</select>
+    <input type="text" placeholder="что взять из материала" data-lab-key="${mp}${id}.note" value="${esc(getKey(`${mp}${id}.note`,''))}">
+    <button class="btn danger" type="button" data-delete-material="${id}">×</button></div>`).join(''):`<div class="small">Пока пусто. Сюда можно сохранять конкретные статьи, видео, упражнения и памятки.</div>`;
+  document.getElementById('weekMemo').value=getKey(`lab.${w}.memo`,'');
+  document.querySelectorAll('[data-lab-key]').forEach(el=>el.addEventListener('input',e=>saveKey(e.target.dataset.labKey,e.target.value,650)));
+  document.querySelectorAll('[data-lab-key] select').forEach(()=>{});
+  document.querySelectorAll('select[data-lab-key]').forEach(el=>el.addEventListener('change',e=>saveKey(e.target.dataset.labKey,e.target.value)));
+  document.querySelectorAll('[data-delete-word]').forEach(b=>b.addEventListener('click',()=>{saveKey(`${wp}${b.dataset.deleteWord}.deleted`,true);renderWeekLab();}));
+  document.querySelectorAll('[data-delete-material]').forEach(b=>b.addEventListener('click',()=>{saveKey(`${mp}${b.dataset.deleteMaterial}.deleted`,true);renderWeekLab();}));
+}
+document.getElementById('labWeek').addEventListener('change',renderWeekLab);
+document.getElementById('addWord').addEventListener('click',addWord);
+document.getElementById('addMaterial').addEventListener('click',addMaterial);
+document.getElementById('weekMemo').addEventListener('input',e=>saveKey(`lab.${labSelectedWeek()}.memo`,e.target.value,700));
+document.getElementById('targetScore').addEventListener('input',e=>{saveKey('mastery.target',e.target.value,500);updateMastery();});
+document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.go).scrollIntoView({behavior:'smooth'})));
+document.getElementById('weekSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('#weekBody tr').forEach(tr=>tr.style.display=!q||tr.dataset.search.includes(q)?'':'none');});
+document.getElementById('exportState').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({namespace:NS,exportedAt:new Date().toISOString(),state},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='eng-b2-progress.json';a.click();URL.revokeObjectURL(a.href);});
+document.getElementById('importState').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const obj=JSON.parse(await f.text());state=obj.state||obj;const now=Date.now();Object.keys(state).forEach(k=>stateMeta[k]=now);persistLocal();setStatus('Импорт выполнен · прогресс восстановлен');render();renderWeekLab();Object.keys(state).forEach(k=>queueRemoteWrite(k,state[k],stateMeta[k],0));}catch(err){setStatus('Ошибка импорта: '+err.message,true);}e.target.value='';});
+function icsEscape(s){return String(s).replace(/\\/g,'\\\\').replace(/,/g,'\\,').replace(/;/g,'\\;').replace(/\n/g,'\\n');}
+function dtForWeek(w,def){return ymd(dateUTC((w-1)*7+def.dayOffset))+'T'+def.start;}
+function dtEndForWeek(w,def){return ymd(dateUTC((w-1)*7+def.dayOffset))+'T'+def.end;}
+function makeICS(){let lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Polina//ENG-B2 Workload//RU','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  studyDefs.forEach(def=>{lines.push('BEGIN:VEVENT',`UID:engb2-${def.id}@local`,`DTSTART;TZID=${TZ}:${dtForWeek(1,def)}`,`DTEND;TZID=${TZ}:${dtEndForWeek(1,def)}`,'RRULE:FREQ=WEEKLY;COUNT=40',`SUMMARY:${icsEscape('ENG-B2 · '+def.task)}`,'DESCRIPTION:'+icsEscape('7h/week study plan. Source plan has no official class meeting time.'),'END:VEVENT');});
+  const ds=[{d:new Date(Date.UTC(2026,10,12)),t:'Official transcript — completed & in-progress coursework'},{d:dueFor(12),t:'ENG-B2 · W12 Mid-term Checkpoint'},{d:dueFor(40),t:'ENG-B2 · W40 Full Mock Exam'}];
+  ds.forEach((x,i)=>{const start=ymd(x.d),end=ymd(new Date(x.d.getTime()+86400000));lines.push('BEGIN:VEVENT',`UID:engb2-deadline-${i}@local`,`DTSTART;VALUE=DATE:${start}`,`DTEND;VALUE=DATE:${end}`,`SUMMARY:${icsEscape(x.t)}`,'END:VEVENT');});
+  lines.push('END:VCALENDAR');return lines.join('\r\n');}
+document.getElementById('exportIcs').addEventListener('click',()=>{const blob=new Blob([makeICS()],{type:'text/calendar;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='eng-b2-calendar.ics';a.click();URL.revokeObjectURL(a.href);});
+render();
+renderWeekLab();
+initFirebaseSync();
+</script>
+</body>
+</html>
