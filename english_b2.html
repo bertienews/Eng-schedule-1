@@ -25,6 +25,7 @@ section{margin:18px 0}.section-head{display:flex;justify-content:space-between;g
 .table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--line);background:var(--panel);box-shadow:var(--shadow)}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:12px 13px;border-bottom:1px solid var(--line);vertical-align:top}th{position:sticky;top:0;background:#f0ede6;text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;z-index:1}tr:last-child td{border-bottom:0}tr.current-week{background:#eef5fb}.small{font-size:12px;color:var(--muted)}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#e7edf2;color:#29485e;font-size:11px;font-weight:700}.pill.warn{background:#fff1cf;color:#855b09}.pill.user{background:#efe8f2;color:#5a4664}.pill.phase2{background:#e8f2ed;color:#2f6652}.pill.phase3{background:#f0eaf3;color:#624f6d}
 .check{display:inline-flex;gap:8px;align-items:flex-start}.check input{margin-top:3px;width:17px;height:17px;accent-color:var(--accent)}.check.done{opacity:.6;text-decoration:line-through}.blocks{display:grid;gap:5px}.blocks label{font-size:12px}.progress{height:10px;background:#e9e5dd;border-radius:999px;overflow:hidden}.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .25s}.phase-row{display:grid;grid-template-columns:200px 1fr 70px;gap:12px;align-items:center;margin:10px 0}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px}.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;padding:9px 12px;font-weight:650;cursor:pointer}.btn:hover{background:#f0ede6}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.danger{color:var(--bad)}input[type="text"],input[type="number"],input[type="date"],input[type="url"],select,textarea{border:1px solid var(--line);background:white;border-radius:9px;padding:8px 10px;color:var(--ink);font:inherit}
+.auth-panel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}.auth-user{font-size:12px;color:var(--muted);overflow-wrap:anywhere}.hidden{display:none!important}
 textarea{width:100%;min-height:110px;resize:vertical}.week-lab{padding:20px}.week-lab-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.editor-list{display:grid;gap:10px}.editor-item{display:grid;grid-template-columns:1fr 1fr 1.4fr auto;gap:8px;align-items:start;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff}.editor-item.material{grid-template-columns:1fr 1.3fr .8fr 1.2fr auto}.editor-item input,.editor-item select{width:100%}.week-select-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.week-summary{padding:14px;border-radius:12px;background:#f0ede6;margin:12px 0}.tiny{font-size:11px;color:var(--muted)}.cloud-ok{background:#edf6f1!important;color:#225b43!important}.cloud-warn{background:#fff8e8!important;color:#855b09!important}
 .calc{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}.calc-box{padding:20px}.mastery-table{width:100%;min-width:0;box-shadow:none;border:0}.mastery-table th{position:static}.score{width:90px}.weight{width:76px}.metric{font-size:36px;font-weight:800;line-height:1}.muted{color:var(--muted)}.search{min-width:260px}
 .legend{display:flex;flex-wrap:wrap;gap:8px}.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px}.dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}.dot.p2{background:var(--ok)}.dot.p3{background:var(--accent2)}
@@ -46,7 +47,12 @@ footer{padding:28px 0 12px;color:var(--muted);font-size:12px;text-align:center}
         <div class="eyebrow" style="color:var(--muted)">Хранение</div>
         <h3 style="margin:.35rem 0 .6rem">Локально + Firebase</h3>
         <div id="storageStatus" class="statusline">localStorage активен</div>
-        <div id="cloudStatus" class="statusline cloud-warn" style="margin-top:8px">Firebase: подключение…</div>
+        <div id="cloudStatus" class="statusline cloud-warn" style="margin-top:8px">Firebase: требуется вход</div>
+        <div class="auth-panel">
+          <button class="btn primary" id="signInGoogle" type="button">Войти через Google</button>
+          <button class="btn hidden" id="signOutGoogle" type="button">Выйти</button>
+          <span id="authUser" class="auth-user">Облачные данные доступны только после входа.</span>
+        </div>
       </div>
       <div class="toolbar" style="margin-top:18px">
         <button class="btn" id="exportState">Экспорт прогресса</button>
@@ -197,6 +203,8 @@ footer{padding:28px 0 12px;color:var(--muted);font-size:12px;text-align:center}
   <footer>ENG‑B2 workload system · standalone HTML · localStorage + Firebase RTDB sync</footer>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script>
 const START_UTC = Date.UTC(2026,8,12); // 12 Sep 2026, date arithmetic only
 const NS = 'polina_eng_b2_v1';
@@ -210,7 +218,8 @@ const firebaseConfig = {
   appId: "1:368253462740:web:65e025de25552b0add3341",
   measurementId: "G-V58WK1BE0S"
 };
-const DB_ROOT = 'engB2DashboardV2/state';
+const LEGACY_DB_ROOT = 'engB2DashboardV2/state';
+const USER_DB_NAME = 'engB2DashboardV3';
 const DB_CANDIDATES = [
   `https://${firebaseConfig.projectId}-default-rtdb.firebaseio.com`,
   `https://${firebaseConfig.projectId}-default-rtdb.europe-west1.firebasedatabase.app`,
@@ -275,11 +284,19 @@ let state = {};
 let stateMeta = {};
 let dbBase = localStorage.getItem(NS+'.dbBase') || '';
 let syncTimer = null;
+let firebaseUser = null;
+let auth = null;
 const remoteTimers = new Map();
 try{ state = JSON.parse(localStorage.getItem(NS)||'{}') || {}; }catch(e){ state={}; }
 try{ stateMeta = JSON.parse(localStorage.getItem(NS+'.meta')||'{}') || {}; }catch(e){ stateMeta={}; }
 function setStatus(msg,bad=false){const el=document.getElementById('storageStatus');el.textContent=msg;el.className='statusline'+(bad?' bad':'');}
 function setCloudStatus(msg,kind='warn'){const el=document.getElementById('cloudStatus');el.textContent=msg;el.className='statusline '+(kind==='bad'?'bad':kind==='ok'?'cloud-ok':'cloud-warn');}
+function setAuthUi(user){
+  const signedIn=!!user;
+  document.getElementById('signInGoogle').classList.toggle('hidden',signedIn);
+  document.getElementById('signOutGoogle').classList.toggle('hidden',!signedIn);
+  document.getElementById('authUser').textContent=signedIn?`Вход выполнен: ${user.email||'Google account'}`:'Облачные данные доступны только после входа.';
+}
 function persistLocal(){ localStorage.setItem(NS,JSON.stringify(state)); localStorage.setItem(NS+'.meta',JSON.stringify(stateMeta)); }
 function keyToPath(k){return btoa(unescape(encodeURIComponent(String(k)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function pathToKey(s){let x=String(s).replace(/-/g,'+').replace(/_/g,'/');while(x.length%4)x+='=';return decodeURIComponent(escape(atob(x)));}
@@ -290,50 +307,118 @@ function saveKey(key,val,remoteDelay=0){
 }
 function getKey(key,fallback){ return Object.prototype.hasOwnProperty.call(state,String(key)) ? state[String(key)] : fallback; }
 function queueRemoteWrite(key,val,ts,delay=0){
-  if(!dbBase)return; const id=String(key);
+  if(!dbBase||!firebaseUser)return; const id=String(key);
   if(remoteTimers.has(id))clearTimeout(remoteTimers.get(id));
   remoteTimers.set(id,setTimeout(()=>{remoteTimers.delete(id);writeRemoteKey(id,val,ts);},delay));
 }
 async function writeRemoteKey(key,val,ts){
-  if(!dbBase)return;
+  if(!dbBase||!firebaseUser)return;
   try{
-    const r=await fetch(`${dbBase}/${DB_ROOT}/${keyToPath(key)}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:val,updatedAt:Number(ts)||Date.now()})});
+    const r=await authFetch(`${dbBase}/${userDbRoot()}/${keyToPath(key)}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({value:val,updatedAt:Number(ts)||Date.now()})});
     if(!r.ok){const t=await r.text();throw new Error(`write ${r.status}: ${t.slice(0,120)}`);}
     setCloudStatus('Firebase: синхронизация активна','ok');
   }catch(e){setCloudStatus('Firebase: ошибка записи · '+e.message,'bad');}
 }
+function userDbRoot(){
+  if(!firebaseUser)throw new Error('сначала войдите через Google');
+  return `users/${firebaseUser.uid}/${USER_DB_NAME}/state`;
+}
+async function authFetch(url,options={}){
+  if(!firebaseUser)throw new Error('сначала войдите через Google');
+  const token=await firebaseUser.getIdToken();
+  const join=url.includes('?')?'&':'?';
+  return fetch(`${url}${join}auth=${encodeURIComponent(token)}`,options);
+}
 async function resolveDatabase(){
+  if(!firebaseUser)throw new Error('сначала войдите через Google');
   const candidates=dbBase?[dbBase,...DB_CANDIDATES.filter(x=>x!==dbBase)]:DB_CANDIDATES;
   for(const u of candidates){
     try{
-      const r=await fetch(`${u}/.json?shallow=true`,{cache:'no-store'});
+      const r=await authFetch(`${u}/${userDbRoot()}.json`,{cache:'no-store'});
       if(r.status!==404){dbBase=u;localStorage.setItem(NS+'.dbBase',u);return u;}
     }catch(e){}
   }
   throw new Error('адрес Realtime Database не определён');
 }
+function mergeRemotePackets(remote){
+  let changed=false;
+  if(remote&&typeof remote==='object'){
+    Object.entries(remote).forEach(([encoded,packet])=>{
+      if(!packet||typeof packet!=='object'||!Object.prototype.hasOwnProperty.call(packet,'value'))return;
+      let key;try{key=pathToKey(encoded);}catch(e){return;}
+      const rt=Number(packet.updatedAt)||0,lt=Number(stateMeta[key])||0;
+      if(rt>=lt){state[key]=packet.value;stateMeta[key]=rt;changed=true;}
+    });
+  }
+  return changed;
+}
 async function pullRemote(){
-  if(!dbBase)return;
+  if(!dbBase||!firebaseUser)return;
   try{
-    const r=await fetch(`${dbBase}/${DB_ROOT}.json`,{cache:'no-store'});
+    const r=await authFetch(`${dbBase}/${userDbRoot()}.json`,{cache:'no-store'});
     if(!r.ok){const t=await r.text();throw new Error(`read ${r.status}: ${t.slice(0,120)}`);}
-    const remote=await r.json(); let changed=false;
-    if(remote&&typeof remote==='object'){
-      Object.entries(remote).forEach(([encoded,packet])=>{
-        if(!packet||typeof packet!=='object'||!Object.prototype.hasOwnProperty.call(packet,'value'))return;
-        let key;try{key=pathToKey(encoded);}catch(e){return;}
-        const rt=Number(packet.updatedAt)||0, lt=Number(stateMeta[key])||0;
-        if(rt>=lt){state[key]=packet.value;stateMeta[key]=rt;changed=true;}
-      });
-    }
+    const remote=await r.json();const changed=mergeRemotePackets(remote);
     if(changed){persistLocal();render();renderWeekLab();}
     setCloudStatus('Firebase: синхронизация активна','ok');
   }catch(e){setCloudStatus('Firebase: '+e.message,'bad');}
 }
-async function initFirebaseSync(){
-  setCloudStatus('Firebase: подключение…','warn');
-  try{await resolveDatabase();await pullRemote();syncTimer=setInterval(pullRemote,15000);}
-  catch(e){setCloudStatus('Firebase: '+e.message,'bad');}
+async function pushLocalSnapshot(){
+  for(const key of Object.keys(state))await writeRemoteKey(String(key),state[key],stateMeta[key]||Date.now());
+}
+async function migrateLegacyOnce(){
+  const marker=`${NS}.legacyMigrated.${firebaseUser.uid}`;
+  if(localStorage.getItem(marker)==='yes')return;
+  try{
+    const r=await authFetch(`${dbBase}/${LEGACY_DB_ROOT}.json`,{cache:'no-store'});
+    if(!r.ok)return;
+    const legacy=await r.json();
+    if(mergeRemotePackets(legacy)){persistLocal();render();renderWeekLab();}
+    await pushLocalSnapshot();
+    localStorage.setItem(marker,'yes');
+  }catch(e){/* Legacy may already be blocked by secure rules; local data remains safe. */}
+}
+async function startUserSync(){
+  if(syncTimer)clearInterval(syncTimer);
+  setCloudStatus('Firebase: подключение защищённого хранилища…','warn');
+  try{
+    await resolveDatabase();
+    await pullRemote();
+    await migrateLegacyOnce();
+    await pushLocalSnapshot();
+    setCloudStatus('Firebase: защищённая синхронизация активна','ok');
+    syncTimer=setInterval(pullRemote,15000);
+  }catch(e){setCloudStatus('Firebase: '+e.message,'bad');}
+}
+async function signInWithGoogle(){
+  try{
+    setCloudStatus('Firebase: открываю вход Google…','warn');
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:'select_account'});
+    await auth.signInWithPopup(provider);
+  }catch(e){
+    const hint=e.code==='auth/unauthorized-domain'?' · добавь домен GitHub Pages в Firebase Authentication → Settings → Authorized domains':'';
+    setCloudStatus('Firebase: вход не выполнен · '+(e.message||e.code)+hint,'bad');
+  }
+}
+async function initFirebaseAuth(){
+  setAuthUi(null);
+  if(typeof firebase==='undefined'){
+    setCloudStatus('Firebase Auth не загрузился. Проверь подключение к интернету.','bad');
+    return;
+  }
+  try{
+    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+    auth=firebase.auth();
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    auth.onAuthStateChanged(async user=>{
+      firebaseUser=user||null;setAuthUi(firebaseUser);
+      if(firebaseUser)await startUserSync();
+      else{
+        if(syncTimer){clearInterval(syncTimer);syncTimer=null;}
+        setCloudStatus('Firebase: войдите через Google для синхронизации','warn');
+      }
+    });
+  }catch(e){setCloudStatus('Firebase Auth: '+e.message,'bad');}
 }
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function dateUTC(offsetDays){ return new Date(START_UTC + offsetDays*86400000); }
@@ -421,6 +506,10 @@ function renderWeekLab(){
 document.getElementById('labWeek').addEventListener('change',renderWeekLab);
 document.getElementById('addWord').addEventListener('click',addWord);
 document.getElementById('addMaterial').addEventListener('click',addMaterial);
+document.getElementById('signInGoogle').addEventListener('click',signInWithGoogle);
+document.getElementById('signOutGoogle').addEventListener('click',async()=>{
+  try{if(auth)await auth.signOut();}catch(e){setCloudStatus('Firebase: не удалось выйти · '+e.message,'bad');}
+});
 document.getElementById('weekMemo').addEventListener('input',e=>saveKey(`lab.${labSelectedWeek()}.memo`,e.target.value,700));
 document.getElementById('targetScore').addEventListener('input',e=>{saveKey('mastery.target',e.target.value,500);updateMastery();});
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.go).scrollIntoView({behavior:'smooth'})));
@@ -438,7 +527,7 @@ function makeICS(){let lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Polina/
 document.getElementById('exportIcs').addEventListener('click',()=>{const blob=new Blob([makeICS()],{type:'text/calendar;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='eng-b2-calendar.ics';a.click();URL.revokeObjectURL(a.href);});
 render();
 renderWeekLab();
-initFirebaseSync();
+initFirebaseAuth();
 </script>
 </body>
 </html>
